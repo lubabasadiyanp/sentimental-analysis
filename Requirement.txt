@@ -1,10 +1,8 @@
-streamlit
 plotly
-numpy
-pandas
 scipy
 scikit-learn
 xgboost
 nltk
-requests
-tqdm
+wordcloud
+transformers
+torch
