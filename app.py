@@ -386,16 +386,10 @@ with t1:
 
     with LEFT:
         st.markdown('<div class="sh">Enter Review</div>', unsafe_allow_html=True)
-        ex = st.selectbox("Quick example (or type your own below)", list(EXAMPLES.keys()))
-        default = EXAMPLES[ex] if ex != "-- pick example --" else ""
-        txt = st.text_area(
-            "✍️ Type or paste any review here",
-            value=default,
-            height=180,
-            placeholder="e.g. The battery life is great but the camera is disappointing...",
-            help="Type anything — your own review, a copied comment, anything you want to classify."
-        )
-        go_btn = st.button("🔍 Predict Sentiment", type="primary", use_container_width=True)
+        ex = st.selectbox("Quick example", list(EXAMPLES.keys()))
+        txt = st.text_area("Review text", value=EXAMPLES[ex], height=180,
+                           placeholder="Paste or type a customer review…")
+        go_btn = st.button("Analyse", type="primary", use_container_width=True)
         st.caption(f"{len(txt.split())} words · {len(txt)} chars")
     with RIGHT:
         if go_btn and txt.strip():
