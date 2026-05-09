@@ -2,7 +2,7 @@ import streamlit as st
 
 st.set_page_config(
     page_title="SentimentIQ",
-    page_icon="U0001F9E0",
+    page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -74,7 +74,7 @@ ASPECTS = {
     "Battery / Tech":  ["battery","camera","screen","performance","update","app","software","hardware"],
 }
 
-EMO_ICON = {"sadness":"U0001F61E","joy":"U0001F604","love":"U0001F970",
+EMO_ICON = {EMO_ICON = {"sadness":"😞","joy":"😄","love":"🥰",
             "anger":"U0001F621","fear":"U0001F628","surprise":"U0001F632"}
 
 # --------------------------------------------------------------------------- #
@@ -415,7 +415,7 @@ with t1:
                     st.warning("Model not loaded — place the .pkl file next to app.py")
                 else:
                     bc = {"Positive":"bp","Neutral":"bu","Negative":"bn"}[sent]
-                    ei = {"Positive":"U0001F60A","Neutral":"U0001F610","Negative":"U0001F61E"}[sent]
+                    ei = {"Positive":"😊","Neutral":"😐","Negative":"😞"}[sent]
                     st.markdown(
                         f"<div style='text-align:center;padding:.8rem 0'>"
                         f"<span class='badge {bc}'>{ei} {sent}</span>"
@@ -446,7 +446,7 @@ with t1:
                     html = '<div class="apills">'
                     for a, r in asp.items():
                         c = {"Positive":"ap","Neutral":"au","Negative":"an"}[r["label"]]
-                        i = {"Positive":"U00002705","Neutral":"U00002796","Negative":"U0000274C"}[r["label"]]
+                        i = {"Positive":"✅","Neutral":"➖","Negative":"❌"}[r["label"]]
                         html += f'<span class="apill {c}">{i} {a} ({r["score"]:+.2f})</span>'
                     html += "</div>"
                     st.markdown(html, unsafe_allow_html=True)
@@ -486,7 +486,7 @@ with t1:
                 verdict, fp = pred_fake(txt, clf_f, arts.get("tfidf"))
                 if verdict:
                     css = "fake" if verdict == "Fake" else "genuine"
-                    icon = "U000026A0" if verdict == "Fake" else "U00002705"
+                    icon = "⚠️" if verdict == "Fake" else "✅"
                     conf = fp[1] if verdict == "Fake" else fp[0]
                     st.markdown(
                         f'<div class="{css}">{icon} {verdict.upper()} '
