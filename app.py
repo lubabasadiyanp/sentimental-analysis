@@ -39,28 +39,20 @@ except ImportError:
     st.error("**Missing package: `scipy`** — add `scipy==1.13.1` to requirements.txt")
     st.stop()
 
-# ── torch ─────────────────────────────────────────────────────────────────────
+# ── torch + transformers (optional — app works without them using SVM/LR/RF/XGB) ──
+TORCH_AVAILABLE = False
 try:
     import torch
-except ImportError:
-    st.error(
-        "**Missing package: `torch`**  \n\n"
-        "Add these two lines to `requirements.txt`:\n"
-        "```\n--extra-index-url https://download.pytorch.org/whl/cpu\n"
-        "torch==2.3.0+cpu\n```"
-    )
-    st.stop()
-
-# ── transformers ──────────────────────────────────────────────────────────────
-try:
     from transformers import (
         DistilBertTokenizerFast,
         DistilBertForSequenceClassification,
-        pipeline,
+        pipeline as hf_pipeline,
     )
+    TORCH_AVAILABLE = True
 except ImportError:
-    st.error("**Missing package: `transformers`** — add `transformers==4.41.2` to requirements.txt")
-    st.stop()
+    # App degrades gracefully — DistilBERT tab hidden, classical models still work
+    torch = None  # type: ignore
+    hf_pipeline = None  # type: ignore
 
 # ── nltk ──────────────────────────────────────────────────────────────────────
 try:
@@ -184,7 +176,7 @@ _nltk()
 # ─────────────────────────────────────────────────────────────────────────────
 # CONSTANTS
 # ─────────────────────────────────────────────────────────────────────────────
-DEVICE       = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+DEVICE       = torch.device("cuda" if TORCH_AVAILABLE and torch.cuda.is_available() else "cpu") if TORCH_AVAILABLE else None
 LABEL_NAMES  = ["Negative", "Neutral", "Positive"]
 INT2LABEL    = {0: "Negative", 1: "Neutral", 2: "Positive"}
 LABEL2INT    = {"Negative": 0, "Neutral": 1, "Positive": 2}
@@ -224,6 +216,8 @@ def load_classical():
 
 @st.cache_resource(show_spinner=False)
 def load_distilbert():
+    if not TORCH_AVAILABLE:
+        return None, None
     tok = DistilBertTokenizerFast.from_pretrained("distilbert-base-uncased")
     mdl = DistilBertForSequenceClassification.from_pretrained(
         "distilbert-base-uncased", num_labels=3,
@@ -236,7 +230,9 @@ def load_distilbert():
 
 @st.cache_resource(show_spinner=False)
 def load_emotion():
-    return pipeline(
+    if not TORCH_AVAILABLE:
+        return None
+    return hf_pipeline(
         "text-classification",
         model="bhadresh-savani/distilbert-base-uncased-emotion",
         return_all_scores=True,
@@ -315,6 +311,8 @@ def predict_classical(text: str, artifacts: dict, model_key: str):
 
 def predict_distilbert(text: str, tok, mdl):
     """Run DistilBERT. Returns (label, proba_np_array, ms)."""
+    if not TORCH_AVAILABLE or tok is None or mdl is None:
+        return None, None, None
     enc  = tok(text[:512], return_tensors="pt",
                truncation=True, padding=True, max_length=128).to(DEVICE)
     t0   = time.perf_counter()
@@ -481,11 +479,13 @@ def _status(path, name):
 with st.sidebar:
     st.markdown("## ⚙️ Configuration")
 
-    primary_model = st.selectbox(
-        "Primary Sentiment Model",
+    _model_opts = (
         ["DistilBERT (fine-tuned)", "SVM (Linear)", "Logistic Regression",
-         "Random Forest", "XGBoost"],
+         "Random Forest", "XGBoost"]
+        if TORCH_AVAILABLE else
+        ["SVM (Linear)", "Logistic Regression", "Random Forest", "XGBoost"]
     )
+    primary_model = st.selectbox("Primary Sentiment Model", _model_opts)
     MODEL_KEY_MAP = {
         "DistilBERT (fine-tuned)": "BERT",
         "SVM (Linear)":            "SVM",
