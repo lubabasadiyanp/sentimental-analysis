@@ -74,7 +74,7 @@ ASPECTS = {
     "Battery / Tech":  ["battery","camera","screen","performance","update","app","software","hardware"],
 }
 
-EMO_ICON = {EMO_ICON = {"sadness":"😞","joy":"😄","love":"🥰",
+EMO_ICON {"sadness":"😞","joy":"😄","love":"🥰",
             "anger":"U0001F621","fear":"U0001F628","surprise":"U0001F632"}
 
 # --------------------------------------------------------------------------- #
