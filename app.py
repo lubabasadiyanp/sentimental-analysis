@@ -9,24 +9,66 @@ Artifacts expected (place in same folder as this file):
   best_distilbert.pt     fake_review_clf.pkl
 """
 
-# ── stdlib / third-party ─────────────────────────────────────────────────────
-import os, re, time, pickle, io, warnings
+# ── stdlib ────────────────────────────────────────────────────────────────────
+import os, re, time, pickle, io, warnings, sys
+warnings.filterwarnings("ignore")
+
+# ── streamlit MUST be first ───────────────────────────────────────────────────
+import streamlit as st
+
+# ── core ──────────────────────────────────────────────────────────────────────
 import numpy as np
 import pandas as pd
-import streamlit as st
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
-import torch
-from transformers import (
-    DistilBertTokenizerFast,
-    DistilBertForSequenceClassification,
-    pipeline,
-)
-import scipy.sparse as sp
-import nltk
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
-warnings.filterwarnings("ignore")
+
+# ── plotly ────────────────────────────────────────────────────────────────────
+try:
+    import plotly.graph_objects as go
+    import plotly.express as px
+    from plotly.subplots import make_subplots
+except ImportError:
+    st.error(
+        "**Missing package: `plotly`**  \n\n"
+        "Add `plotly==5.22.0` to `requirements.txt` and redeploy."
+    )
+    st.stop()
+
+# ── scipy ─────────────────────────────────────────────────────────────────────
+try:
+    import scipy.sparse as sp
+except ImportError:
+    st.error("**Missing package: `scipy`** — add `scipy==1.13.1` to requirements.txt")
+    st.stop()
+
+# ── torch ─────────────────────────────────────────────────────────────────────
+try:
+    import torch
+except ImportError:
+    st.error(
+        "**Missing package: `torch`**  \n\n"
+        "Add these two lines to `requirements.txt`:\n"
+        "```\n--extra-index-url https://download.pytorch.org/whl/cpu\n"
+        "torch==2.3.0+cpu\n```"
+    )
+    st.stop()
+
+# ── transformers ──────────────────────────────────────────────────────────────
+try:
+    from transformers import (
+        DistilBertTokenizerFast,
+        DistilBertForSequenceClassification,
+        pipeline,
+    )
+except ImportError:
+    st.error("**Missing package: `transformers`** — add `transformers==4.41.2` to requirements.txt")
+    st.stop()
+
+# ── nltk ──────────────────────────────────────────────────────────────────────
+try:
+    import nltk
+    from nltk.sentiment.vader import SentimentIntensityAnalyzer
+except ImportError:
+    st.error("**Missing package: `nltk`** — add `nltk==3.8.1` to requirements.txt")
+    st.stop()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE CONFIG
